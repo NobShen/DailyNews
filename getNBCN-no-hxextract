@@ -1,0 +1,21 @@
+#!/bin/bash
+today=$(date +%Y-%m-%d)
+yesterday=$(date -d yesterday +%Y-%m-%d)
+
+echo 'Enter input file name containing all news URLs'
+echo 'build-bantin.txt contains all raw xml feeds'
+echo 'bantin.item contains all xml items'
+echo 'bantin.xml contains the feeds'
+
+touch all.nbcn.raw.$today
+
+wget --no-check-certificate https://nhombancongnhan.com/blog-feed.xml -O - >>all.nbcn.raw.$today
+
+# hxextract item all.nbcn.raw.$today > all.nbcn.item.$today
+
+echo $(cat all.nbcn.raw.$today) | sed 's|<item>|\n<item>|g' | sort | uniq >all.nbcn.item.sorted.$today
+
+grep "\<pubDate>Sat, 13" all.nbcn.item.sorted.$today >all.nbcn.item.xml.$today 
+
+cat nbcn.head all.nbcn.item.xml.$today nbcn.tail >bantin-no-hxextract.xml
+scp bantin-no-hxextract.xml yisvfxmy@yis.vfx.mybluehost.me:~/public_html/mydshbrd/
