@@ -1,0 +1,26 @@
+#!/bin/bash -x
+
+# a list of RSS feeds is stored in newsLinks
+# downloadRSS() will download these RSS xml files and store them in separate files ($fName.xml).  A list of all these files is also stored in a file named all.xml
+# then xtractItem() extracts <link> and <title> from these files
+fullRSS() {
+	while read LINE; do
+		fName="$(grep -o '[^/]*$' <<< $LINE)"
+		wget "$LINE" -O - >$fName.xml
+		xml fo --omit-decl --nocdata $fName.xml >$fName.xml.1
+		xml_grep 'link' $fName.xml.1 >xml.link
+		xml_grep 'title' $fName.xml.1 --text_only >xml.title
+		grep '<link>' xml.link | sed 's|<link>|<li><a href=|g' | sed 's|</link>|>|g' >xml.link.fixed
+	        if [ "$(wc -l < xml.link.fixed)" -eq "$(wc -l < xml.title)" ]; then 
+			paste xml.link.fixed xml.title >>x1
+			#echo "<li>" $ITEM>>x1        	
+		else 
+                	echo 'Warning: No Match!' >>x1; 
+        	fi
+	done < <(cat "$@")
+}
+
+rm *.xml
+rm *.1
+rm x1
+fullRSS
