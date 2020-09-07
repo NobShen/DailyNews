@@ -1,0 +1,10 @@
+./cleanRSS | cat newsLinks.all.save.backup | ./fullRSS
+mv index.new index.old
+cat x1 | sort | uniq >index.new
+awk 'FNR==NR {a[$0]++; next} !($0 in a)' index.old index.new >index.body
+cat all-news.head index.body all-news.tail >index.html
+# upload index.html to web location
+scp index.html yisvfxmy@yis.vfx.mybluehost.me:~/public_html/heartofoc/
+cat all-news.head index.new all-news.tail >all-news.html
+# upload all-news.html to web location
+scp all-news.html yisvfxmy@yis.vfx.mybluehost.me:~/public_html/heartofoc/
