@@ -1,5 +1,6 @@
 #!/bin/bash -x
-# ex: getRSS en
+# getRSS takes a list of urls, download and extract links and titles (in fullRSS), and post newer items (in postRSS)
+# ex: getRSS en (en.rss)
 # takes each line in en.rss and downloads to en.xml
 
 getRSS() {
