@@ -1,0 +1,8 @@
+# post the links and titles downloaded and select the new items only
+# new items are compared with old items
+postRSS() {
+        cat /home4/yisvfxmy/public_html/giavi/tmp.match|sed 's|<link>|<li><a href=|g'|sed 's|</link>|>|g'|sed 's|<title>||g'|sed 's|</title>|</a></li>|g'>/home4/yisvfxmy/public_html/giavi/$1.new
+        comm -3 <(sort $1.old) <(sort $1.new) >$1.body
+        cat /home4/yisvfxmy/public_html/giavi/head.html /home4/yisvfxmy/public_html/giavi/$1.body /home4/yisvfxmy/public_html/giavi/tail.html >/home4/yisvfxmy/public_html/giavi/$1.html
+}
+postRSS $1
