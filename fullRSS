@@ -1,26 +1,20 @@
 #!/bin/bash -x
+# fullRSS takes the url's piped in and extract titles and links
+# takes each line in en.rss and downloads to en.xml
+# then creates en.link and en.title
+# paste to en.match if en.link and en.title match
+# if not match then save to en.error for fixing later
 
-# a list of RSS feeds is stored in newsLinks
-# downloadRSS() will download these RSS xml files and store them in separate files ($fName.xml).  A list of all these files is also stored in a file named all.xml
-# then xtractItem() extracts <link> and <title> from these files
 fullRSS() {
-	while read LINE; do
-		fName="$(grep -o '[^/]*$' <<< $LINE)"
-		wget "$LINE" -O - >$fName.xml
-		xml fo --omit-decl --nocdata $fName.xml >$fName.xml.1
-		xml_grep 'link' $fName.xml.1 >xml.link
-		xml_grep 'title' $fName.xml.1 --text_only >xml.title
-		grep '<link>' xml.link | sed 's|<link>|<li><a href=|g' | sed 's|</link>|>|g' >xml.link.fixed
-	        if [ "$(wc -l < xml.link.fixed)" -eq "$(wc -l < xml.title)" ]; then 
-			paste xml.link.fixed xml.title >>x1
-			#echo "<li>" $ITEM>>x1        	
-		else 
-                	echo 'Warning: No Match!' >>x1; 
-        	fi
-	done < <(cat "$@")
+        while read LINE; do
+                wget "$LINE" -O - >tmp.xml
+                sed -e 's/<!\[CDATA\[//g; s/\]\]>//g' tmp.xml | grep '<link>' >tmp.link
+                sed -e 's/<!\[CDATA\[//g; s/\]\]>//g' tmp.xml | grep '<title>' >tmp.title
+                if [ "$(wc -l < tmp.link)" -eq "$(wc -l < tmp.title)" ]; then
+                        paste tmp.link tmp.title >>tmp.match
+                else
+                        echo 'Warning: No Match!' >>tmp.error;
+                fi
+        done < <(cat "$@")
 }
-
-rm *.xml
-rm *.1
-rm x1
 fullRSS
