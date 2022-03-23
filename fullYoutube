@@ -1,0 +1,33 @@
+#!/bin/bash -x
+
+# a list of RSS feeds is stored in Youtube.rss
+# downloadRSS() will download these RSS xml files and store them in separate files ($fName.xml).  A list of all these files is also stored in a file named all.xml
+# then xtractItem() extracts <link> and <title> from these files
+# youtube xml file structure as follow
+# <media:group>
+#    <media:title>LẠY CÔ HỒN SỐNG</media:title>
+#    <media:content url="https://www.youtube.com/v/hTZ1Byp9vTM?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+
+fullYoutube() {
+	while read LINE; do
+		fName="$(grep -o '[^/]*$' <<< $LINE)"
+		wget "$LINE" -O - >/home/dailynews/proj/DailyNews/mainNews/$fName.xml
+		# curl "$LINE" >/home/dailynews/proj/DailyNews/mainNews/$fName.xml
+		/snap/bin/xml fo --omit-decl --nocdata /home/dailynews/proj/DailyNews/mainNews/$fName.xml >/home/dailynews/proj/DailyNews/mainNews/$fName.xml.1
+		/usr/bin/xml_grep 'media:content' /home/dailynews/proj/DailyNews/mainNews/$fName.xml.1 >/home/dailynews/proj/DailyNews/mainNews/xml.link
+		/usr/bin/xml_grep 'media:title' /home/dailynews/proj/DailyNews/mainNews/$fName.xml.1 --text_only >/home/dailynews/proj/DailyNews/mainNews/xml.title
+		grep 'url="' /home/dailynews/proj/DailyNews/mainNews/xml.link | sed 's|url="|\n<li><a href=|g' | sed 's|" width="|>\n|g' | grep '<li>' >/home/dailynews/proj/DailyNews/mainNews/xml.link.fixed
+	        if [ "$(wc -l < /home/dailynews/proj/DailyNews/mainNews/xml.link.fixed)" -eq "$(wc -l < /home/dailynews/proj/DailyNews/mainNews/xml.title)" ]; then 
+			paste /home/dailynews/proj/DailyNews/mainNews/xml.link.fixed /home/dailynews/proj/DailyNews/mainNews/xml.title >>/home/dailynews/proj/DailyNews/mainNews/x1
+			#echo "<li>" $ITEM>>/home/dailynews/proj/DailyNews/mainNews/x1	
+		else 
+                	echo 'Warning: No Match!' >>/home/dailynews/proj/DailyNews/mainNews/x1; 
+        	fi
+		sleep $[ ( $RANDOM % 10 )  + 1 ]s
+	done < <(cat "$@")
+}
+
+rm /home/dailynews/proj/DailyNews/mainNews/*.xml
+rm /home/dailynews/proj/DailyNews/mainNews/*.1
+#-rm /home/dailynews/proj/DailyNews/mainNews/x1
+fullYoutube
