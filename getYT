@@ -1,0 +1,14 @@
+#!/bin/bash -x
+# ex: getYT yt
+# takes each line in yt.rss and downloads to yt.xml
+
+getYT() {
+        file=$1
+        # getRSS() takes a parameter to decide which RSS file to use (en or vi)
+        mv /home4/yisvfxmy/public_html/xitodie/$file.new /home4/yisvfxmy/public_html/xitodie/$file.old
+        echo "Passing to fullRSS " $file
+        cat /home4/yisvfxmy/public_html/xitodie/$file.rss |/home4/yisvfxmy/public_html/xitodie/fullRSS
+        /home4/yisvfxmy/public_html/xitodie/postYT $file
+}
+rm tmp.*
+getYT $1
