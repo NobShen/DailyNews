@@ -1,0 +1,6 @@
+postYT() {
+        cat /home4/yisvfxmy/public_html/xitodie/tmp.match >/home4/yisvfxmy/public_html/xitodie/$1.new
+        comm -1 <(sort $1.old) <(sort $1.new) >$1.body
+        cat /home4/yisvfxmy/public_html/xitodie/head.html /home4/yisvfxmy/public_html/xitodie/$1.body /home4/yisvfxmy/public_html/xitodie/tail.html >/home4/yisvfxmy/public_html/xitodie/$1.html
+}
+postYT $1
