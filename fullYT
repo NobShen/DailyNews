@@ -1,0 +1,20 @@
+#!/bin/bash -x
+# ex: fullYT yt
+# takes each line in yt.rss and downloads to yt.xml
+# then creates yt.link and yt.title
+# paste to en.match if en.link and en.title match
+# if not match then save to en.error for fixing later
+
+fullYT() {
+        while read LINE; do
+                wget "$LINE" -O - >tmp.xml
+                grep '<media:content' tmp.xml | sed 's|<media:content url="|<li><a href=|g' | sed 's|"|>\n|g' | grep '<li>' >tmp.link
+                grep '<media:title>' tmp.xml | sed 's|<media:title>||g' | sed 's|</media:title>|</a></li>|g' >tmp.title
+                if [ "$(wc -l < tmp.link)" -eq "$(wc -l < tmp.title)" ]; then
+                        paste tmp.link tmp.title >>tmp.match
+                else
+                        echo 'No Match!' >>tmp.error;
+                fi
+        done < <(cat "$@")
+}
+fullYT
